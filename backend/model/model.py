@@ -10,9 +10,9 @@ from keras.layers import (Conv2D, Flatten, MaxPooling2D, Dense, Dropout,
 # import numpy as np
 
 # labels is a list of all 510 unique species with no repeats
-TRAIN_DATADIR = os.join("data", "train")
-TEST_DATADIR = os.join("data", "test")
-VAL_DATADIR = os.join("data", "val")
+TRAIN_DATADIR = os.path.join("data", "train")
+TEST_DATADIR = os.path.join("data", "test")
+VAL_DATADIR = os.path.join("data", "val")
 IMG_SIZE = 224
 
 data_augmentation = Sequential()
