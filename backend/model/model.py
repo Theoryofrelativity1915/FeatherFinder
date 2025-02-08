@@ -1,18 +1,16 @@
-import os
 import tensorflow as tf
 # from tensorflow import keras
 from keras import regularizers
 from keras.models import Sequential
-from keras.layers import (Conv2D, Flatten, MaxPooling2D, Dense, Dropout,
-                          BatchNormalization, ReLU, RandomRotation,
-                          RandomContrast, Rescaling)
+from keras.layers import Conv2D, Flatten, MaxPooling2D, Dense, Dropout, BatchNormalization, ReLU, RandomRotation, RandomContrast, Rescaling
+import os
 # import matplotlib.pyplot as plt
 # import numpy as np
 
 # labels is a list of all 510 unique species with no repeats
-TRAIN_DATADIR = os.path.join("data", "train")
-TEST_DATADIR = os.path.join("data", "test")
-VAL_DATADIR = os.path.join("data", "val")
+TRAIN_DATADIR = "./data/Additional_unused_data/train_unused"
+TEST_DATADIR = "./data/Additional_unused_data/test_unused"
+VAL_DATADIR = "./data/Additional_unused_data/valid_unused"
 IMG_SIZE = 224
 
 data_augmentation = Sequential()
@@ -21,16 +19,13 @@ data_augmentation.add(RandomRotation(0.4))
 
 
 # creates a data pipeline rather than loading all 89,000 images into VRAM
-train_data = tf.keras.preprocessing.image_dataset_from_directory(TRAIN_DATADIR,
-                                                                 image_size=(
-                                                                     IMG_SIZE,
-                                                                     IMG_SIZE),
-                                                                 batch_size=32)
+train_data = tf.keras.preprocessing.image_dataset_from_directory(
+    TRAIN_DATADIR, image_size=(IMG_SIZE, IMG_SIZE), batch_size=32)
 class_names = train_data.class_names
-if __name__ == "__main__":
-    augmented_train_data = train_data.map(
-        lambda x, y: (data_augmentation(x, training=True), y))
-    augmented_train_data = augmented_train_data.cache().prefetch(tf.data.AUTOTUNE)
+# if __name__ == "__main__":
+#     augmented_train_data = train_data.map(
+#         lambda x, y: (data_augmentation(x, training=True), y))
+#     augmented_train_data = augmented_train_data.cache().prefetch(tf.data.AUTOTUNE)
 
 testing_data = tf.keras.preprocessing.image_dataset_from_directory(
     TEST_DATADIR, image_size=(IMG_SIZE, IMG_SIZE), batch_size=32)
@@ -84,21 +79,18 @@ model.add(Dense(510, activation='softmax'))
 
 if __name__ == "__main__":
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
-                  loss=tf.losses.SparseCategoricalCrossentropy(),
-                  metrics=['accuracy'])
+                  loss=tf.losses.SparseCategoricalCrossentropy(), metrics=['accuracy'])
     model.fit(train_data, epochs=10, validation_data=valid_data)
     model.summary()
     model.evaluate(testing_data)
 
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
-                  loss=tf.losses.SparseCategoricalCrossentropy(),
-                  metrics=['accuracy'])
+                  loss=tf.losses.SparseCategoricalCrossentropy(), metrics=['accuracy'])
     model.fit(train_data, epochs=10, validation_data=valid_data)
     model.evaluate(testing_data)
 
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
-                  loss=tf.losses.SparseCategoricalCrossentropy(),
-                  metrics=['accuracy'])
+                  loss=tf.losses.SparseCategoricalCrossentropy(), metrics=['accuracy'])
     model.fit(train_data, epochs=10, validation_data=valid_data)
     model.evaluate(testing_data)
 
