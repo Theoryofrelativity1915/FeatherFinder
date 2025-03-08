@@ -173,3 +173,4 @@ cython_debug/
 .pypirc
 
 scratch
+backend/model/trained_models/ResNet50V2.h5
