@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-from BirdClassificationV6 import class_names, testing_data
+from Resnet50 import class_names, testing_data
 
 # Initialize constants
 IMAGE_DIRECTORY = 'C:\\Datasets\\images to predict\\'
@@ -11,8 +11,7 @@ PREDICT_IMG_LABELS = ["African Crowned Crane", "African Crowned Crane", "African
 IMAGES_TO_PREDICT = [plt.imread(os.path.join(IMAGE_DIRECTORY, image)) for image in os.listdir(IMAGE_DIRECTORY)]
 # IMAGES_TO_PREDICT = [plt.imread(image) for image in IMAGES_TO_PREDICT]
 # Load pre-trained model
-model = tf.keras.models.load_model(os.path.join('models', 'BirdClassificationV6.h5'))
-
+model = tf.keras.models.load_model(os.path.join('models', 'ResNet50V2.h5'))
 # #Evaluate and print models performance
 test_loss, test_accuracy = model.evaluate(testing_data)
 print("Loss on test set: {}".format(test_loss))
@@ -30,11 +29,8 @@ for i in range(1, 7):
     predictions = model.predict(input_arry, verbose=0)
     score = tf.nn.softmax(predictions[0])
     predicted_class = class_names[np.argmax(predictions)]
-
-predicted_labels.append(predicted_class)
+    predicted_labels.append(predicted_class)
 print('Bird is most likely a ', predicted_class)
-
-
 
 plt.figure(figsize=(8, 8))
 ax1 = plt.subplot(231)
