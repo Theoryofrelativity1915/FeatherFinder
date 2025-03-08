@@ -1,12 +1,10 @@
 from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.camera import Camera
 from kivy.graphics import Color, Ellipse
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.widget import Widget
-from kivy.uix.label import Label
 from kivy.uix.behaviors import ButtonBehavior
-import os
+from backend.model.inference import infer
 
 
 class CircularButton(ButtonBehavior, Widget):
@@ -39,14 +37,11 @@ class CameraAppLayout(FloatLayout):
         self.capture_button.bind(on_press=self.take_picture)
         self.add_widget(self.capture_button)
 
-    def take_picture(self, instance):
-        pictures_dir = os.path.expanduser("~") + "/Pictures"
-        if not os.path.exists(pictures_dir):
-            os.makedirs(pictures_dir)
+    def take_picture(self, _):
+        image_as_texture = self.camera.texture
 
-        file_path = os.path.join(pictures_dir, "captured_image.png")
-        self.camera.export_to_png(file_path)
-        print(f"Picture saved at: {file_path}")
+        predicted_bird = infer(image_as_texture)
+        print(predicted_bird)
 
 
 class CameraApp(App):
@@ -54,5 +49,5 @@ class CameraApp(App):
         return CameraAppLayout()
 
 
-if __name__ == "__main__":
+def start_gui():
     CameraApp().run()
