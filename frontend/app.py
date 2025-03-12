@@ -4,13 +4,13 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
-from kivy.uix.image import Image
 from kivy.uix.camera import Camera
-from kivy.uix.filechooser import FileChooserIconView
-from kivy.uix.popup import Popup
+from kivy.graphics import Color, Ellipse
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.widget import Widget
+from kivy.uix.behaviors import ButtonBehavior
+from backend.model.inference import infer
 import sqlite3
-import os
-
 
 # Database setup
 def init_db():
@@ -26,7 +26,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-
 def update_bird_count(username, count):
     conn = sqlite3.connect("birdwatcher.db")
     cursor = conn.cursor()
@@ -36,7 +35,6 @@ def update_bird_count(username, count):
     conn.commit()
     conn.close()
 
-
 def get_top_users():
     conn = sqlite3.connect("birdwatcher.db")
     cursor = conn.cursor()
@@ -44,7 +42,6 @@ def get_top_users():
     users = cursor.fetchall()
     conn.close()
     return users
-
 
 class LoginScreen(Screen):
     def __init__(self, **kwargs):
@@ -67,7 +64,6 @@ class LoginScreen(Screen):
             conn.commit()
             conn.close()
 
-
 class LeaderboardScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -81,8 +77,6 @@ class LeaderboardScreen(Screen):
         self.layout.add_widget(self.refresh_button)
         nav_button = Button(text="Go to Camera", on_press=self.go_to_camera)
         self.layout.add_widget(nav_button)
-        upload_button = Button(text="Upload Photo", on_press=self.go_to_upload)
-        self.layout.add_widget(upload_button)
         self.add_widget(self.layout)
         self.update_leaderboard()
 
@@ -99,58 +93,42 @@ class LeaderboardScreen(Screen):
     def go_to_camera(self, instance):
         self.manager.current = 'camera'
 
-    def go_to_upload(self, instance):
-        self.manager.current = 'upload'
+class CircularButton(ButtonBehavior, Widget):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        with self.canvas:
+            Color(1, 1, 1, 0.1)  # Semi-transparent white
+            self.circle = Ellipse(size=self.size, pos=self.pos)
+        self.bind(pos=self.update_circle, size=self.update_circle)
 
+    def update_circle(self, *args):
+        self.circle.size = self.size
+        self.circle.pos = self.pos
 
 class CameraScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.layout = BoxLayout(orientation='vertical')
-        self.camera = Camera(index=0, play=True, resolution=(640, 480))
+        self.layout = FloatLayout()
+        self.camera = Camera(play=True)
+        self.camera.size_hint = (1, 1)
+        self.camera.allow_stretch = True
         self.layout.add_widget(self.camera)
-        save_button = Button(text='Capture', on_press=self.capture_photo)
-        self.layout.add_widget(save_button)
-        back_button = Button(text="Back to Leaderboard", on_press=self.go_to_leaderboard)
-        self.layout.add_widget(back_button)
+
+        self.capture_button = CircularButton(
+            size_hint=(None, None),
+            size=(100, 100),
+            pos_hint={'center_x': 0.5, 'bottom': 0.1},
+        )
+        self.capture_button.bind(on_press=self.capture_photo)
+        self.layout.add_widget(self.capture_button)
         self.add_widget(self.layout)
 
-    def capture_photo(self, instance):
+    def capture_photo(self, _):
+        image_as_texture = self.camera.texture
+        predicted_bird = infer(image_as_texture)
         username = self.manager.get_screen('leaderboard').username
         update_bird_count(username, 1)
-        photo_path = os.path.join(os.getcwd(), 'bird_photo.png')
-        self.camera.export_to_png(photo_path)
-        print(f"Photo saved at {photo_path}")
-
-    def go_to_leaderboard(self, instance):
-        self.manager.current = 'leaderboard'
-
-
-class FileUploadScreen(Screen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.layout = BoxLayout(orientation='vertical')
-        self.file_chooser = FileChooserIconView()
-        self.layout.add_widget(self.file_chooser)
-        select_button = Button(text='Select', on_press=self.load_selected_photo)
-        self.layout.add_widget(select_button)
-        self.image_display = Image()
-        self.layout.add_widget(self.image_display)
-        back_button = Button(text="Back to Leaderboard", on_press=self.go_to_leaderboard)
-        self.layout.add_widget(back_button)
-        self.add_widget(self.layout)
-
-    def load_selected_photo(self, instance):
-        selected = self.file_chooser.selection
-        if selected:
-            username = self.manager.get_screen('leaderboard').username
-            update_bird_count(username, 1)
-            self.image_display.source = selected[0]
-            self.image_display.reload()
-
-    def go_to_leaderboard(self, instance):
-        self.manager.current = 'leaderboard'
-
+        print(predicted_bird)
 
 class BirdWatcherApp(App):
     def build(self):
@@ -159,9 +137,7 @@ class BirdWatcherApp(App):
         sm.add_widget(LoginScreen(name='login'))
         sm.add_widget(LeaderboardScreen(name='leaderboard'))
         sm.add_widget(CameraScreen(name='camera'))
-        sm.add_widget(FileUploadScreen(name='upload'))
         return sm
-
 
 if __name__ == '__main__':
     BirdWatcherApp().run()
