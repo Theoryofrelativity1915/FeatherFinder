@@ -25,5 +25,6 @@ def infer(camera_texture):
         if class_score < THRESHOLD:
             predicted_class = None
         print(predicted_class)
+        return predicted_class
     except:
         print("problem")
