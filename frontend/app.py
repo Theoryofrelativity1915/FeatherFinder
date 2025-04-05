@@ -104,14 +104,14 @@ class LeaderboardScreen(Screen):
         self.layout.add_widget(self.leaderboard_label)
         self.refresh_button = Button(text="Refresh Leaderboard", on_press=self.update_leaderboard)
         self.layout.add_widget(self.refresh_button)
-        self.collected_button = Button(text="Show My Collected Birds", on_press=self.display_birds)
-        self.layout.add_widget(self.collected_button)
+        #self.collected_button = Button(text="Show My Collected Birds", on_press=self.display_birds)
+        #self.layout.add_widget(self.collected_button)
         nav_button = Button(text="Go to Camera", on_press=self.go_to_camera)
         self.layout.add_widget(nav_button)
         self.add_widget(self.layout)
         self.update_leaderboard()
 
-    def set_user(self, username):
+    def set_user(self, username, id):
         self.username = username
         self.user_label.text = f"Logged in as: {username}"
         self.id = id
@@ -139,7 +139,6 @@ class CircularButton(ButtonBehavior, Widget):
 
 # Custom Rectangle Button
 class RectangleButton(ButtonBehavior, Widget):
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.label = Label(text='Return')
@@ -172,7 +171,7 @@ class CameraScreen(Screen):
         self.capture_button.bind(on_press=self.capture_photo)
         self.layout.add_widget(self.capture_button)
 
-        self.birdLabel = Label(text="", pos_hint = {"center_x": 0.5, "center_y": 0.5})
+        self.birdLabel = Label(text="", pos_hint = {"center_x": 0.5, "center_y": 0.2})
         self.layout.add_widget(self.birdLabel)
 
         # Returns from camera to leaderboard
@@ -192,15 +191,13 @@ class CameraScreen(Screen):
         image_as_texture = self.camera.texture
         predicted_bird = infer(image_as_texture)
         predicted_bird = str(predicted_bird)
-        username = self.manager.get_screen('leaderboard').username
-        id = self.manager.get_screen('leaderboard').id
         if(predicted_bird != "None"):
+            username = self.manager.get_screen('leaderboard').username
+            id = self.manager.get_screen('leaderboard').id
             update_bird_count(username, 1)
-        self.birdLabel.text = predicted_bird
-        account = user_account(username, id)
-        if(predicted_bird != "None"):
+            self.birdLabel.text = predicted_bird
+            account = user_account(username, id)
             account.collectBird(predicted_bird)
-        print(predicted_bird)
 
 class BirdWatcherApp(App):
     def build(self):
