@@ -13,6 +13,8 @@ from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.progressbar import ProgressBar
 from backend.model.inference import infer
 import backend.db.utils as db
+from kivy.graphics import PushMatrix, PopMatrix, Rotate
+import platform
 
 
 class LoadingScreen(Screen):
@@ -117,6 +119,26 @@ class CameraScreen(Screen):
         self.camera = Camera(play=True)
         self.camera.size_hint = (1, 1)
         self.camera.allow_stretch = True
+
+        is_mac = platform.system() == 'Darwin'
+        if is_mac:
+            # Add rotation transformation
+            with self.camera.canvas.before:
+                PushMatrix()
+                self.rot = Rotate()
+                self.rot.angle = -90  # 90 degrees rotation
+            with self.camera.canvas.after:
+                PopMatrix()
+            
+        # Function to update rotation origin
+        def update_rotation(*args):
+            self.rot.origin = (self.camera.center_x, self.camera.center_y)
+            
+        # Schedule initial update and bind to size/position changes
+        Clock.schedule_once(update_rotation, 0)
+        self.camera.bind(size=update_rotation, pos=update_rotation)
+
+
         self.layout.add_widget(self.camera)
 
         self.capture_button = CircularButton(
@@ -164,3 +186,4 @@ class BirdWatcherApp(App):
 
 def start_app():
     BirdWatcherApp().run()
+

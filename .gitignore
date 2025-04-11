@@ -175,3 +175,7 @@ cython_debug/
 scratch
 scratch.py
 backend/model/trained_models
+
+bin
+pyvenv.cfg
+*.db
