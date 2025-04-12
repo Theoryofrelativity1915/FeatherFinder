@@ -155,9 +155,10 @@ from kivy.uix.camera import Camera
 from kivy.core.camera import Camera as CoreCamera
 
 class CameraScreen(Screen):
-    def __init__(self, **kwargs):
+    def __init__(self, leaderboard=None, **kwargs):
         super().__init__(**kwargs)
         self.layout = FloatLayout()
+        self.leaderboard = leaderboard
         try:
             self.camera = Camera(play=True)
             self.camera.size_hint = (1, 1)
@@ -209,6 +210,7 @@ class CameraScreen(Screen):
 
     def go_to_leaderboard(self, _):
         self.manager.current = "leaderboard"
+        self.leaderboard.update_leaderboard(None)
 
     def capture_photo(self, _):
         self.bird_label.text = ""
@@ -225,8 +227,9 @@ class BirdWatcherApp(App):
         sm = ScreenManager()
         sm.add_widget(LoadingScreen(name='loading'))
         sm.add_widget(LoginScreen(name='login'))
-        sm.add_widget(LeaderboardScreen(name='leaderboard'))
-        sm.add_widget(CameraScreen(name='camera'))
+        leaderboard_screen = LeaderboardScreen(name='leaderboard')
+        sm.add_widget(leaderboard_screen)
+        sm.add_widget(CameraScreen(leaderboard=leaderboard_screen, name='camera'))
         sm.current = 'loading'
         return sm
 
