@@ -15,6 +15,7 @@ import backend.db.utils as db
 from kivy.graphics import PushMatrix, PopMatrix, Rotate
 from kivy.uix.camera import Camera
 from kivy.core.camera import Camera as CoreCamera
+from kivy.uix.image import Image
 
 import platform
 
@@ -22,6 +23,16 @@ class LoginScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.layout = FloatLayout()
+
+        # Add background image
+        background = Image(
+            source='assets/nicolas-encina-03zxI2tVgd4-unsplash.jpg',
+            allow_stretch=True,
+            keep_ratio=True,
+            size_hint=(1, 1),
+            pos_hint={'center_x': 0.5, 'center_y': 0.5}
+        )
+        self.layout.add_widget(background)
 
         # Create a contained box for login elements with fixed size
         login_container = BoxLayout(
