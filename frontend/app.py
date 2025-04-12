@@ -63,7 +63,7 @@ class LoginScreen(Screen):
         # Username input
         self.username_input = TextInput(
             hint_text='Enter Username',
-            size_hint_y=None,
+            size_hint_y=100,
             height=30,
             multiline=False  # Single line input
         )
@@ -152,25 +152,11 @@ class RectangleButton(ButtonBehavior, Widget):
 from kivy.uix.camera import Camera
 from kivy.core.camera import Camera as CoreCamera
 
-def check_camera_available():
-    try:
-        # Attempt to initialize any camera provider
-        providers = CoreCamera.get_providers()
-        if not providers:
-            return False
-
-        # Test instantiation with first available provider
-        camera = CoreCamera(provider=providers[0], index=0)
-        return True
-    except Exception as e:
-        print(f"Camera error: {e}")
-        return False
-
 class CameraScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.layout = FloatLayout()
-        if check_camera_available():
+        try:
             self.camera = Camera(play=True)
             self.camera.size_hint = (1, 1)
             self.camera.allow_stretch = True
@@ -194,7 +180,7 @@ class CameraScreen(Screen):
             Clock.schedule_once(update_rotation, 0)
             self.camera.bind(size=update_rotation, pos=update_rotation)
 
-        else:
+        except:
             self.camera = Label(text="Camera not available", size_hint=(1, 1))
 
         self.layout.add_widget(self.camera)
