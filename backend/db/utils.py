@@ -49,13 +49,20 @@ def insert_user(username):
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
     cursor.execute("USE bird_tracker")
+    # delimiter $$
+    # create procedure insert_user(IN username_in varchar(255))
+    # begin
+    #         INSERT INTO users (username)
+    #         VALUES (username_in)
+    #         ON DUPLICATE KEY UPDATE username=username_in;
+    # end$$
     cursor.execute("""
-        INSERT INTO users (username)
-        VALUES (%s)
-        ON DUPLICATE KEY UPDATE username=username
+        CALL insert_user(%s)
     """, (username,))
     conn.commit()
+    conn.commit()
     conn.close()
+
 
 
 def update_seen_birds(username, bird_name):
@@ -77,27 +84,33 @@ def get_top_users():
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
     cursor.execute("USE bird_tracker")
-    cursor.execute("""
-        SELECT username, bird_count
-        FROM users
-        ORDER BY bird_count DESC LIMIT 5
-    """)
+    cursor.execute("CALL get_top_users()")
     users = cursor.fetchall()
     conn.close()
     return users
+    # delimiter $$
+    # create procedure get_top_users()
+    # begin
+    #         SELECT username, bird_count
+    #         FROM users
+    #         ORDER BY bird_count DESC LIMIT 5;
+    # end$$
 
 def get_user_stats(username):
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
     cursor.execute("USE bird_tracker")
-    cursor.execute("""
-        SELECT rank_, bird_count FROM (
-            SELECT username, bird_count, RANK()
-            OVER (ORDER BY bird_count DESC) AS rank_
-            FROM users
-        ) AS user_ranks
-        WHERE username = %s;
-    """, (username,))
+    cursor.execute(f'CALL get_bird_stats("{username}")')
     rank, bird_count = cursor.fetchall()[0]
     conn.close()
     return rank, bird_count
+    # delimiter $$
+    # create procedure get_bird_stats(IN username_in varchar(255))
+    # begin
+    #         SELECT rank_, bird_count FROM (
+    #             SELECT username, bird_count, RANK()
+    #             OVER (ORDER BY bird_count DESC) AS rank_
+    #             FROM users
+    #         ) AS user_ranks
+    #         WHERE username = username_in;
+    # end$$
