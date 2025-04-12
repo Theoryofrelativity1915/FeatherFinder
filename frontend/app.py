@@ -112,32 +112,53 @@ class RectangleButton(ButtonBehavior, Widget):
         self.rectangle.size = self.size
         self.rectangle.pos = self.pos
 
+from kivy.uix.camera import Camera
+from kivy.core.camera import Camera as CoreCamera
+
+def check_camera_available():
+    try:
+        # Attempt to initialize any camera provider
+        providers = CoreCamera.get_providers()
+        if not providers:
+            return False
+        
+        # Test instantiation with first available provider
+        camera = CoreCamera(provider=providers[0], index=0)
+        return True
+    except Exception as e:
+        print(f"Camera error: {e}")
+        return False
+
 class CameraScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.layout = FloatLayout()
-        self.camera = Camera(play=True)
-        self.camera.size_hint = (1, 1)
-        self.camera.allow_stretch = True
+        if check_camera_available():
+            self.camera = Camera(play=True)
+            self.camera.size_hint = (1, 1)
+            self.camera.allow_stretch = True
 
-        is_mac = platform.system() == 'Darwin'
-        if is_mac:
-            # Add rotation transformation
-            with self.camera.canvas.before:
-                PushMatrix()
-                self.rot = Rotate()
-                self.rot.angle = -90  # 90 degrees rotation
-            with self.camera.canvas.after:
-                PopMatrix()
-            
-        # Function to update rotation origin
-        def update_rotation(*args):
-            self.rot.origin = (self.camera.center_x, self.camera.center_y)
-            
-        # Schedule initial update and bind to size/position changes
-        Clock.schedule_once(update_rotation, 0)
-        self.camera.bind(size=update_rotation, pos=update_rotation)
 
+            is_mac = platform.system() == 'Darwin'
+            if is_mac:
+                # Add rotation transformation
+                with self.camera.canvas.before:
+                    PushMatrix()
+                    self.rot = Rotate()
+                    self.rot.angle = -90  # 90 degrees rotation
+                with self.camera.canvas.after:
+                    PopMatrix()
+            
+            # Function to update rotation origin
+            def update_rotation(*args):
+                self.rot.origin = (self.camera.center_x, self.camera.center_y)
+                
+            # Schedule initial update and bind to size/position changes
+            Clock.schedule_once(update_rotation, 0)
+            self.camera.bind(size=update_rotation, pos=update_rotation)
+
+        else:
+            self.camera = Label(text="Camera not available", size_hint=(1, 1))
 
         self.layout.add_widget(self.camera)
 
