@@ -23,7 +23,7 @@ class LoadingScreen(Screen):
         self.layout = BoxLayout(orientation = 'vertical')
         self.loading_Label = Label(text= 'Loading . . . ')
         self.layout.add_widget(self.loading_Label)
-        self.load_bar = ProgressBar(max = 500, size_hint=(0.9, 0.1), 
+        self.load_bar = ProgressBar(max = 500, size_hint=(0.9, 0.1),
                                     height = 300, pos_hint={'center_x': 0.5})
         self.layout.add_widget(self.load_bar)
         self.add_widget(self.layout)
@@ -41,11 +41,48 @@ class LoadingScreen(Screen):
 class LoginScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.layout = BoxLayout(orientation='vertical')
-        self.username_input = TextInput(hint_text='Enter Username')
-        self.layout.add_widget(self.username_input)
-        self.login_button = Button(text='Login', on_press=self.login)
-        self.layout.add_widget(self.login_button)
+        self.layout = FloatLayout()
+
+        # Create a contained box for login elements with fixed size
+        login_container = BoxLayout(
+            orientation='vertical',
+            size_hint=(None, None),
+            size=(200, 150),  # Reduced size
+            pos_hint={'center_x': 0.5, 'top': 0.9},  # Changed to position near top
+            spacing=15  # Added spacing between elements
+        )
+
+        # Title label
+        login_label = Label(
+            text="Log In",
+            font_size=24,
+            size_hint_y=None,
+            height=40
+        )
+
+        # Username input
+        self.username_input = TextInput(
+            hint_text='Enter Username',
+            size_hint_y=None,
+            height=30,
+            multiline=False  # Single line input
+        )
+
+        # Login button
+        self.login_button = Button(
+            text='Login',
+            size_hint_y=None,
+            height=40
+        )
+        self.login_button.bind(on_press=self.login)
+
+        # Add widgets to container
+        login_container.add_widget(login_label)
+        login_container.add_widget(self.username_input)
+        login_container.add_widget(self.login_button)
+
+        # Add container to main layout
+        self.layout.add_widget(login_container)
         self.add_widget(self.layout)
 
     def login(self, _):
@@ -121,7 +158,7 @@ def check_camera_available():
         providers = CoreCamera.get_providers()
         if not providers:
             return False
-        
+
         # Test instantiation with first available provider
         camera = CoreCamera(provider=providers[0], index=0)
         return True
@@ -148,11 +185,11 @@ class CameraScreen(Screen):
                     self.rot.angle = -90  # 90 degrees rotation
                 with self.camera.canvas.after:
                     PopMatrix()
-            
+
             # Function to update rotation origin
             def update_rotation(*args):
                 self.rot.origin = (self.camera.center_x, self.camera.center_y)
-                
+
             # Schedule initial update and bind to size/position changes
             Clock.schedule_once(update_rotation, 0)
             self.camera.bind(size=update_rotation, pos=update_rotation)
@@ -207,4 +244,3 @@ class BirdWatcherApp(App):
 
 def start_app():
     BirdWatcherApp().run()
-
