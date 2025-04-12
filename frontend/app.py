@@ -10,33 +10,13 @@ from kivy.graphics import Color, Ellipse, Rectangle
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.widget import Widget
 from kivy.uix.behaviors import ButtonBehavior
-from kivy.uix.progressbar import ProgressBar
 from backend.model.inference import infer
 import backend.db.utils as db
 from kivy.graphics import PushMatrix, PopMatrix, Rotate
+from kivy.uix.camera import Camera
+from kivy.core.camera import Camera as CoreCamera
+
 import platform
-
-
-class LoadingScreen(Screen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.layout = BoxLayout(orientation = 'vertical')
-        self.loading_Label = Label(text= 'Loading . . . ')
-        self.layout.add_widget(self.loading_Label)
-        self.load_bar = ProgressBar(max = 500, size_hint=(0.9, 0.1),
-                                    height = 300, pos_hint={'center_x': 0.5})
-        self.layout.add_widget(self.load_bar)
-        self.add_widget(self.layout)
-        self.progress = 0
-        Clock.schedule_interval(self.update, 0.01)
-
-    def update(self, _):
-        if self.progress < self.load_bar.max:
-            self.progress += 1
-            self.load_bar.value = self.progress
-        else:
-            self.manager.current = 'login'
-            Clock.unschedule(self.update)
 
 class LoginScreen(Screen):
     def __init__(self, **kwargs):
@@ -151,9 +131,6 @@ class RectangleButton(ButtonBehavior, Widget):
         self.rectangle.size = self.size
         self.rectangle.pos = self.pos
 
-from kivy.uix.camera import Camera
-from kivy.core.camera import Camera as CoreCamera
-
 class CameraScreen(Screen):
     def __init__(self, leaderboard=None, **kwargs):
         super().__init__(**kwargs)
@@ -225,12 +202,11 @@ class BirdWatcherApp(App):
     def build(self):
         db.init_db()
         sm = ScreenManager()
-        sm.add_widget(LoadingScreen(name='loading'))
         sm.add_widget(LoginScreen(name='login'))
         leaderboard_screen = LeaderboardScreen(name='leaderboard')
         sm.add_widget(leaderboard_screen)
         sm.add_widget(CameraScreen(leaderboard=leaderboard_screen, name='camera'))
-        sm.current = 'loading'
+        sm.current = 'login'
         return sm
 
 def start_app():
