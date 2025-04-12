@@ -1,6 +1,6 @@
 from kivy.app import App
 from kivy.clock import Clock
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -118,7 +118,9 @@ class LeaderboardScreen(Screen):
         self.leaderboard_label.text = leaderboard_text
 
     def go_to_camera(self, _):
+        self.manager.transition = SlideTransition(direction='right')
         self.manager.current = 'camera'
+        self.manager.transition = SlideTransition(direction='left')
 
 class CircularButton(ButtonBehavior, Widget):
     def __init__(self, **kwargs):
